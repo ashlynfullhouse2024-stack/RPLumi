@@ -82,14 +82,14 @@ function createKeyValueRow(label: string, value: string, isLink = false): TableR
 
 function buildMadrasahHeaderParagraphs(profile: TeacherProfile): Paragraph[] {
   const foundation =
-    profile.foundationName || 'YAYASAN PENDIDIKAN ISLAM / KEMENTERIAN AGAMA REPUBLIK INDONESIA';
-  const schoolName = (profile.school || 'MADRASAH / SEKOLAH').toUpperCase();
-  const accred = profile.accreditation || 'TERAKREDITASI "B"';
-  const nsmText = profile.nsm ? `NSM : ${profile.nsm}` : 'NSM : -';
-  const npsnText = profile.npsn ? `NPSN : ${profile.npsn}` : 'NPSN : -';
+    profile.foundationName || 'YAYASAN PENDIDIKAN ISLAM CAHAYA BUNGA NUSANTARA';
+  const schoolName = (profile.school || 'MI. NURUL AZHAR HARAPAN').toUpperCase();
+  const accred = profile.accreditation || 'TERAKREDITASI "A"';
+  const nsmText = profile.nsm ? `NSM : ${profile.nsm}` : 'NSM : 111235009988';
+  const npsnText = profile.npsn ? `NPSN : ${profile.npsn}` : 'NPSN : 60799887';
   const address =
     profile.schoolAddress ||
-    (profile.city ? `Alamat: ${profile.school}, ${profile.city}` : 'Alamat Madrasah / Sekolah');
+    'Jl. Melati Indah No. 45 RT. 002 / RW. 005 Kel. Sukamaju, Kec. Lembah Asri, Kota Bunga Raya 12345';
 
   const items: Paragraph[] = [
     new Paragraph({
@@ -189,17 +189,24 @@ function buildMadrasahHeaderParagraphs(profile: TeacherProfile): Paragraph[] {
 }
 
 export async function createOfficialLetterDocxBlob(profile: TeacherProfile): Promise<Blob> {
+  const address =
+    profile.schoolAddress ||
+    'Jl. Melati Indah No. 45 RT. 002 / RW. 005 Kel. Sukamaju, Kec. Lembah Asri, Kota Bunga Raya 12345';
+
   const headmasterTable = new Table({
     width: { size: 100, type: WidthType.PERCENTAGE },
     borders: NO_BORDER,
     rows: [
-      createKeyValueRow('Nama Lengkap', profile.headmaster || '[Nama Kepala Madrasah]'),
-      createKeyValueRow('NUPTK / NIP', profile.headmasterId || '-'),
-      createKeyValueRow('Tempat dan Tanggal Lahir', profile.headmasterBirth || '-'),
+      createKeyValueRow('Nama Lengkap', profile.headmaster || 'Hj. SITI NURHALIZA, M.Pd.I.'),
+      createKeyValueRow('NUPTK / NIP', profile.headmasterId || '1234567890123456'),
+      createKeyValueRow(
+        'Tempat dan Tanggal Lahir',
+        profile.headmasterBirth || 'Kota Bunga Raya, 10 April 1975'
+      ),
       createKeyValueRow('Jabatan', profile.headmasterPosition || 'Kepala Madrasah'),
-      createKeyValueRow('Tempat Tugas', profile.school || '-'),
-      createKeyValueRow('Alamat Madrasah', profile.schoolAddress || '-'),
-      createKeyValueRow('No. HP', profile.headmasterPhone || '-'),
+      createKeyValueRow('Tempat Tugas', profile.school || 'MI. NURUL AZHAR HARAPAN'),
+      createKeyValueRow('Alamat Madrasah', address),
+      createKeyValueRow('No. HP', profile.headmasterPhone || '081200001111'),
     ],
   });
 
@@ -207,12 +214,15 @@ export async function createOfficialLetterDocxBlob(profile: TeacherProfile): Pro
     width: { size: 100, type: WidthType.PERCENTAGE },
     borders: NO_BORDER,
     rows: [
-      createKeyValueRow('Nama Lengkap', profile.name || '[Nama Guru]'),
-      createKeyValueRow('NUPTK / NIP', profile.nip || '-'),
-      createKeyValueRow('Tempat dan Tanggal Lahir', profile.teacherBirth || '-'),
+      createKeyValueRow('Nama Lengkap', profile.name || 'AHMAD RASYID, S.Pd.'),
+      createKeyValueRow('NUPTK / NIP', profile.nip || '9876543210987654'),
+      createKeyValueRow(
+        'Tempat dan Tanggal Lahir',
+        profile.teacherBirth || 'Lembah Asri, 22 Agustus 1992'
+      ),
       createKeyValueRow('Mapel Yang Diampu', profile.subject || 'Guru Kelas'),
-      createKeyValueRow('Tempat Tugas', profile.school || '-'),
-      createKeyValueRow('No. HP', profile.teacherPhone || '-'),
+      createKeyValueRow('Tempat Tugas', profile.school || 'MI. NURUL AZHAR HARAPAN'),
+      createKeyValueRow('No. HP', profile.teacherPhone || '085700002222'),
     ],
   });
 
@@ -222,16 +232,20 @@ export async function createOfficialLetterDocxBlob(profile: TeacherProfile): Pro
     rows: [
       createKeyValueRow(
         'Judul',
-        profile.topic || 'Modul Pembelajaran / Karya Inovasi Pembelajaran'
+        profile.topic || 'Modul Pembelajaran Kelas 5 Tema Ekosistem dan Pelestarian Lingkungan'
       ),
       createKeyValueRow('Jenis Produk', profile.productType || 'Modul'),
-      createKeyValueRow('Link / Tautan', profile.productLink || '-', Boolean(profile.productLink)),
+      createKeyValueRow(
+        'Link / Tautan',
+        profile.productLink || 'https://contoh-portofolio-guru.id/modul-ekosistem',
+        true
+      ),
     ],
   });
 
   const dateLine =
     profile.letterDate ||
-    `${profile.city || 'Tangerang Selatan'}, ${new Date().toLocaleDateString('id-ID', {
+    `${profile.city || 'Kota Bunga Raya'}, ${new Date().toLocaleDateString('id-ID', {
       day: 'numeric',
       month: 'long',
       year: 'numeric',
@@ -259,7 +273,7 @@ export async function createOfficialLetterDocxBlob(profile: TeacherProfile): Pro
             alignment: AlignmentType.CENTER,
             children: [
               new TextRun({
-                text: `Nomor : ${profile.letterNumber || '069 / S.Ket / MIS / X / 2025'}`,
+                text: `Nomor : ${profile.letterNumber || '012 / S.Ket / MI-NAH / III / 2026'}`,
                 size: 23,
                 font: 'Times New Roman',
               }),
@@ -292,7 +306,7 @@ export async function createOfficialLetterDocxBlob(profile: TeacherProfile): Pro
             children: [
               new TextRun({
                 text: `Nama tersebut di atas adalah benar merupakan guru yang bertugas di ${
-                  profile.school || 'Madrasah'
+                  profile.school || 'MI. NURUL AZHAR HARAPAN'
                 } yang telah membuat karya inovasi berupa :`,
                 size: 23,
                 font: 'Times New Roman',
@@ -337,7 +351,7 @@ export async function createOfficialLetterDocxBlob(profile: TeacherProfile): Pro
             indent: { left: 5200 },
             children: [
               new TextRun({
-                text: profile.headmaster || 'DAHLIAH, S.Ag.',
+                text: profile.headmaster || 'Hj. SITI NURHALIZA, M.Pd.I.',
                 bold: true,
                 size: 23,
                 font: 'Times New Roman',
@@ -365,14 +379,14 @@ export function createOfficialLetterPdf(profile: TeacherProfile): jsPDF {
   });
 
   const foundation = (
-    profile.foundationName || 'YAYASAN PENDIDIKAN ISLAM ISHLAHUDDINIYYAH PONDOK AREN'
+    profile.foundationName || 'YAYASAN PENDIDIKAN ISLAM CAHAYA BUNGA NUSANTARA'
   ).toUpperCase();
-  const schoolName = (profile.school || 'MI. ISHLAHUDDINIYYAH').toUpperCase();
-  const accred = `STATUS : ${profile.accreditation || 'TERAKREDITASI "B"'}`;
-  const nsmNpsn = `NSM : ${profile.nsm || '111236740010'}   NPSN : ${profile.npsn || '60721485'}`;
+  const schoolName = (profile.school || 'MI. NURUL AZHAR HARAPAN').toUpperCase();
+  const accred = `STATUS : ${profile.accreditation || 'TERAKREDITASI "A"'}`;
+  const nsmNpsn = `NSM : ${profile.nsm || '111235009988'}   NPSN : ${profile.npsn || '60799887'}`;
   const address =
     profile.schoolAddress ||
-    'Jl. Panti Asuhan RT. 003 / 011 Kp. Ceger, Kel. Jurang Mangu Barat, Kec. Pondok Aren, Kota Tangerang Selatan 15423';
+    'Jl. Melati Indah No. 45 RT. 002 / RW. 005 Kel. Sukamaju, Kec. Lembah Asri, Kota Bunga Raya 12345';
 
   // Emblem Circle on Left of Kop Surat
   pdf.setDrawColor(46, 125, 50);
@@ -402,7 +416,7 @@ export function createOfficialLetterPdf(profile: TeacherProfile): jsPDF {
   pdf.setTextColor(35, 80, 38);
   pdf.text(nsmNpsn, 112, 33.5, { align: 'center' });
 
-  // Green Address Bar matching the PDF example
+  // Green Address Bar
   pdf.setFillColor(46, 125, 50);
   pdf.rect(14, 37, 182, 6.5, 'F');
   pdf.setFont('times', 'bold');
@@ -422,7 +436,7 @@ export function createOfficialLetterPdf(profile: TeacherProfile): jsPDF {
   pdf.setFont('times', 'normal');
   pdf.setFontSize(11);
   pdf.text(
-    `Nomor : ${profile.letterNumber || '069 / S.Ket / MIS-ISHLAH / X / 2022'}`,
+    `Nomor : ${profile.letterNumber || '012 / S.Ket / MI-NAH / III / 2026'}`,
     105,
     61.5,
     { align: 'center' }
@@ -462,27 +476,27 @@ export function createOfficialLetterPdf(profile: TeacherProfile): jsPDF {
 
   pdf.text('Yang bertanda tangan di bawah ini :', leftX, y);
   y += 7;
-  drawRow('Nama Lengkap', profile.headmaster || 'DAHLIAH, S.Ag.');
-  drawRow('NUPTK', profile.headmasterId || '6447752654300042');
-  drawRow('Tempat dan Tanggal Lahir', profile.headmasterBirth || 'Tangerang, 11 Mei 1967');
+  drawRow('Nama Lengkap', profile.headmaster || 'Hj. SITI NURHALIZA, M.Pd.I.');
+  drawRow('NUPTK', profile.headmasterId || '1234567890123456');
+  drawRow('Tempat dan Tanggal Lahir', profile.headmasterBirth || 'Kota Bunga Raya, 10 April 1975');
   drawRow('Jabatan', profile.headmasterPosition || 'Kepala Madrasah');
-  drawRow('Tempat Tugas', profile.school || 'MI Ishlahuddiniyyah');
+  drawRow('Tempat Tugas', profile.school || 'MI. NURUL AZHAR HARAPAN');
   drawRow('Alamat Madrasah', address);
-  drawRow('No. HP', profile.headmasterPhone || '08119793099');
+  drawRow('No. HP', profile.headmasterPhone || '081200001111');
 
   y += 4;
   pdf.text('Menyatakan dengan sesungguhnya, bahwa :', leftX, y);
   y += 7;
-  drawRow('Nama Lengkap', profile.name || 'M. FIRMANSYAH');
-  drawRow('NUPTK', profile.nip || '4344767668200003');
-  drawRow('Tempat dan Tanggal Lahir', profile.teacherBirth || 'Pekalongan, 12 Oktober 1989');
+  drawRow('Nama Lengkap', profile.name || 'AHMAD RASYID, S.Pd.');
+  drawRow('NUPTK', profile.nip || '9876543210987654');
+  drawRow('Tempat dan Tanggal Lahir', profile.teacherBirth || 'Lembah Asri, 22 Agustus 1992');
   drawRow('Mapel Yang Diampu', profile.subject || 'Guru Kelas');
-  drawRow('Tempat Tugas', profile.school || 'MI Ishlahuddiniyyah');
-  drawRow('No. HP', profile.teacherPhone || '088809440112');
+  drawRow('Tempat Tugas', profile.school || 'MI. NURUL AZHAR HARAPAN');
+  drawRow('No. HP', profile.teacherPhone || '085700002222');
 
   y += 4;
   const statement = `Nama tersebut di atas adalah benar merupakan guru yang bertugas di ${
-    profile.school || 'MI Ishlahuddiniyyah'
+    profile.school || 'MI. NURUL AZHAR HARAPAN'
   } yang telah membuat karya inovasi berupa :`;
   const stmtLines = pdf.splitTextToSize(statement, 166);
   for (const line of stmtLines) {
@@ -493,10 +507,14 @@ export function createOfficialLetterPdf(profile: TeacherProfile): jsPDF {
 
   drawRow(
     'Judul',
-    profile.topic || 'Modul Pembelajaran Kelas 6 Tema 2 : Persatuan dalam Perbedaan'
+    profile.topic || 'Modul Pembelajaran Kelas 5 Tema Ekosistem dan Pelestarian Lingkungan'
   );
   drawRow('Jenis Produk', profile.productType || 'Modul');
-  drawRow('Link / Tautan', profile.productLink || 'https://anyflip.com/dwike/xbuu/', true);
+  drawRow(
+    'Link / Tautan',
+    profile.productLink || 'https://contoh-portofolio-guru.id/modul-ekosistem',
+    true
+  );
 
   y += 4;
   const closing =
@@ -511,7 +529,7 @@ export function createOfficialLetterPdf(profile: TeacherProfile): jsPDF {
   const sigX = 126;
   const dateLine =
     profile.letterDate ||
-    `${profile.city || 'Tangerang Selatan'}, ${new Date().toLocaleDateString('id-ID', {
+    `${profile.city || 'Kota Bunga Raya'}, ${new Date().toLocaleDateString('id-ID', {
       day: 'numeric',
       month: 'long',
       year: 'numeric',
@@ -522,7 +540,7 @@ export function createOfficialLetterPdf(profile: TeacherProfile): jsPDF {
   pdf.text(profile.headmasterPosition || 'Kepala Madrasah', sigX, y);
   y += 25;
 
-  const headmasterName = profile.headmaster || 'DAHLIAH, S.Ag.';
+  const headmasterName = profile.headmaster || 'Hj. SITI NURHALIZA, M.Pd.I.';
   pdf.setFont('times', 'bold');
   pdf.text(headmasterName, sigX, y);
   const nameWidth = pdf.getTextWidth(headmasterName);
@@ -635,12 +653,14 @@ export async function exportDraftToPdf(
 
   if (profile) {
     const foundation = (
-      profile.foundationName || 'YAYASAN PENDIDIKAN ISLAM / MADRASAH'
+      profile.foundationName || 'YAYASAN PENDIDIKAN ISLAM CAHAYA BUNGA NUSANTARA'
     ).toUpperCase();
-    const schoolName = (profile.school || 'MADRASAH / SEKOLAH').toUpperCase();
-    const accred = `STATUS : ${profile.accreditation || 'TERAKREDITASI "B"'}`;
-    const nsmNpsn = `NSM : ${profile.nsm || '-'}   NPSN : ${profile.npsn || '-'}`;
-    const address = profile.schoolAddress || profile.city || '';
+    const schoolName = (profile.school || 'MI. NURUL AZHAR HARAPAN').toUpperCase();
+    const accred = `STATUS : ${profile.accreditation || 'TERAKREDITASI "A"'}`;
+    const nsmNpsn = `NSM : ${profile.nsm || '111235009988'}   NPSN : ${profile.npsn || '60799887'}`;
+    const address =
+      profile.schoolAddress ||
+      'Jl. Melati Indah No. 45 RT. 002 / RW. 005 Kel. Sukamaju, Kec. Lembah Asri, Kota Bunga Raya 12345';
 
     pdf.setFont('times', 'bold');
     pdf.setFontSize(10);
@@ -714,7 +734,6 @@ export async function exportAllToZip(
   ];
   zip.file('INFO_PORTOFOLIO.txt', summaryLines.join('\n'));
 
-  // Always include the formatted Official Surat Keterangan in the root of the ZIP
   try {
     const suketDocx = await createOfficialLetterDocxBlob(profile);
     zip.file('Surat_Keterangan_Kepala_Madrasah.docx', suketDocx);

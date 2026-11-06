@@ -150,7 +150,7 @@ export const RPL_CATEGORIES: RplCategory[] = [
         description: 'Format Kop Madrasah, identitas Kamad & Guru, tabel JTM mengajar',
         promptTask: RPL_PROMPTS.sk,
         hoverSummary:
-          'Menyusun Surat Keterangan & tabel verifikasi beban mengajar dengan format resmi Kop Madrasah (Yayasan, NSM, NPSN, Identitas Kepala Madrasah & Guru).',
+          'Menyusun Surat Keterangan & tabel verifikasi beban mengajar dengan format resmi Kop Madrasah.',
         hoverTip:
           'Pastikan nama, NUPTK, mapel, dan jumlah jam tatap muka (JTM) sesuai dengan SK asli dari madrasah/sekolah.',
       },
@@ -163,7 +163,7 @@ export const RPL_CATEGORIES: RplCategory[] = [
     hoverDetail:
       'Kategori RPL02 mencakup 5 dokumen inti perangkat ajar lengkap dengan Surat Keterangan Pengesahan Kepala Madrasah.',
     hoverTip:
-      'Isi kolom "Judul Karya / Topik Materi" dan "Link / Tautan" di Profil Guru agar tercantum di Surat Keterangan Kepala Madrasah.',
+      'Isi kolom "Judul Karya / Topik Materi" di Profil Guru agar seluruh perangkat ajar selaras dalam satu tema.',
     documents: [
       {
         id: 'rpp',
@@ -185,9 +185,9 @@ export const RPL_CATEGORIES: RplCategory[] = [
         description: 'Surat Keterangan Modul, peta konsep, uraian materi, latihan',
         promptTask: RPL_PROMPTS.materi,
         hoverSummary:
-          'Menyusun Surat Keterangan pembuatan Modul Pembelajaran (persis format contoh PDF MI Ishlahuddiniyyah) beserta naskah materi ajar lengkap.',
+          'Menyusun Surat Keterangan pembuatan Modul Pembelajaran beserta naskah materi ajar lengkap.',
         hoverTip:
-          'Cantumkan tautan AnyFlip / Google Drive modul Anda pada kolom Link/Tautan di Profil Guru.',
+          'Cantumkan tautan flipbook / Google Drive modul Anda pada kolom Link/Tautan jika ada.',
       },
       {
         id: 'lkpd',
@@ -302,9 +302,9 @@ export const RPL_CATEGORIES: RplCategory[] = [
     name: 'Inovasi Pembelajaran',
     shortDesc: 'Surat Keterangan Karya Inovasi (Format Kop Madrasah) & laporan inovasi lengkap.',
     hoverDetail:
-      'Kategori RPL05 mendokumentasikan karya inovasi pembelajaran (Modul/Media/E-Book AnyFlip) lengkap dengan Surat Keterangan Kepala Madrasah.',
+      'Kategori RPL05 mendokumentasikan karya inovasi pembelajaran (Modul/Media/E-Book) lengkap dengan Surat Keterangan Kepala Madrasah.',
     hoverTip:
-      'Format Surat Keterangan Kepala Madrasah pada RPL05 mengikuti contoh standar MI Ishlahuddiniyyah (Kop Yayasan/Madrasah, NSM, NPSN, Judul, Jenis Produk, Link/Tautan).',
+      'Format Surat Keterangan Kepala Madrasah pada RPL05 mencakup Kop Yayasan/Madrasah, NSM, NPSN, Judul, Jenis Produk, dan Link/Tautan.',
     documents: [
       {
         id: 'ide',
@@ -316,7 +316,7 @@ export const RPL_CATEGORIES: RplCategory[] = [
         hoverSummary:
           'Menyusun Surat Keterangan Karya Inovasi resmi dari Kepala Madrasah (dengan Judul, Jenis Produk, dan Link/Tautan) beserta Bab 1 Identifikasi Masalah.',
         hoverTip:
-          'Gunakan tab "Pratinjau Format Surat Resmi" di bagian 05 untuk mengunduh khusus halaman Surat Keterangan ber-Kop Madrasah.',
+          'Gunakan tab "Surat Resmi & Ekspor" untuk mengunduh khusus halaman Surat Keterangan ber-Kop Madrasah.',
       },
       {
         id: 'implementasi',
@@ -328,7 +328,7 @@ export const RPL_CATEGORIES: RplCategory[] = [
         hoverSummary:
           'Menyusun Surat Keterangan Karya Inovasi beserta Bab 2 Rancangan Desain, Tahapan Implementasi, dan Dokumentasi.',
         hoverTip:
-          'Pastikan Link/Tautan produk inovasi (misal: https://anyflip.com/...) dapat diakses publik oleh asesor.',
+          'Pastikan Link/Tautan produk inovasi dapat diakses publik oleh asesor.',
       },
       {
         id: 'evaluasi',
@@ -356,7 +356,7 @@ export const EMPTY_PROFILE: TeacherProfile = {
   school: '',
   foundationName: '',
   arabicTitle: '',
-  accreditation: 'TERAKREDITASI "B"',
+  accreditation: 'TERAKREDITASI "A"',
   nsm: '',
   npsn: '',
   schoolAddress: '',
@@ -375,46 +375,44 @@ export const EMPTY_PROFILE: TeacherProfile = {
   headmasterBirth: '',
   headmasterPosition: 'Kepala Madrasah',
   headmasterPhone: '',
-  letterNumber: '069 / S.Ket / MIS / X / 2025',
+  letterNumber: '012 / S.Ket / MI-NAH / III / 2026',
   letterDate: '',
   experience: '',
 };
 
 /**
- * Exact preset matching the user's attached PDF example ("Contoh format file" - MI. ISHLAHUDDINIYYAH)
+ * Fictional sample profile with dummy school name, dummy address, and dummy people
  */
-export const PDF_EXAMPLE_PROFILE: TeacherProfile = {
-  name: 'M. FIRMANSYAH',
-  nip: '4344767668200003',
-  teacherBirth: 'Pekalongan, 12 Oktober 1989',
-  teacherPhone: '088809440112',
-  school: 'MI. ISHLAHUDDINIYYAH',
-  foundationName: 'YAYASAN PENDIDIKAN ISLAM ISHLAHUDDINIYYAH PONDOK AREN',
-  arabicTitle: 'الْمَدْرَسَةُ الْإِبْتِدَائِيَّةُ الْإِصْلَاحُ الدِّيْنِيَّةُ',
-  accreditation: 'TERAKREDITASI "B"',
-  nsm: '111236740010',
-  npsn: '60721485',
+export const SAMPLE_PROFILE: TeacherProfile = {
+  name: 'AHMAD RASYID, S.Pd.',
+  nip: '9876543210987654',
+  teacherBirth: 'Lembah Asri, 22 Agustus 1992',
+  teacherPhone: '085700002222',
+  school: 'MI. NURUL AZHAR HARAPAN',
+  foundationName: 'YAYASAN PENDIDIKAN ISLAM CAHAYA BUNGA NUSANTARA',
+  arabicTitle: 'الْمَدْرَسَةُ الْإِبْتِدَائِيَّةُ نُوْرُ الْأَزْهَارِ',
+  accreditation: 'TERAKREDITASI "A"',
+  nsm: '111235009988',
+  npsn: '60799887',
   schoolAddress:
-    'Jl. Panti Asuhan RT. 003 / 011 Kp. Ceger, Kel. Jurang Mangu Barat, Kec. Pondok Aren, Kota Tangerang Selatan 15423',
+    'Jl. Melati Indah No. 45 RT. 002 / RW. 005 Kel. Sukamaju, Kec. Lembah Asri, Kota Bunga Raya 12345',
   level: 'MI',
   subject: 'Guru Kelas',
-  grade: 'Kelas 6',
-  city: 'Tangerang Selatan',
-  years: '8 tahun',
+  grade: 'Kelas 5',
+  city: 'Kota Bunga Raya',
+  years: '6 tahun',
   period: '2025/2026 - Genap',
-  topic: 'Modul Pembelajaran Kelas 6 Tema 2 : Persatuan dalam Perbedaan',
+  topic: 'Modul Pembelajaran Kelas 5 Tema Ekosistem dan Pelestarian Lingkungan',
   productType: 'Modul',
-  productLink: 'https://anyflip.com/dwike/xbuu/',
-  curriculum: 'Kurikulum Merdeka & K13',
-  headmaster: 'DAHLIAH, S.Ag.',
-  headmasterId: '6447752654300042',
-  headmasterBirth: 'Tangerang, 11 Mei 1967',
+  productLink: 'https://contoh-portofolio-guru.id/modul-ekosistem',
+  curriculum: 'Kurikulum Merdeka & KMA 450/2024',
+  headmaster: 'Hj. SITI NURHALIZA, M.Pd.I.',
+  headmasterId: '1234567890123456',
+  headmasterBirth: 'Kota Bunga Raya, 10 April 1975',
   headmasterPosition: 'Kepala Madrasah',
-  headmasterPhone: '08119793099',
-  letterNumber: '069 / S.Ket / MIS-ISHLAH / X / 2022',
-  letterDate: 'Tangerang Selatan, 12 Oktober 2022',
+  headmasterPhone: '081200001111',
+  letterNumber: '012 / S.Ket / MI-NAH / III / 2026',
+  letterDate: 'Kota Bunga Raya, 15 Maret 2026',
   experience:
-    'Mengajar sebagai Guru Kelas 6 di MI Ishlahuddiniyyah Pondok Aren, Kota Tangerang Selatan. Membuat karya inovasi berupa Modul Pembelajaran Digital Interaktif Kelas 6 Tema 2: Persatuan dalam Perbedaan yang dipublikasikan melalui flipbook AnyFlip, aktif dalam kegiatan KKG MI, serta menyusun perangkat pembelajaran tematik terpadu.',
+    'Mengajar sebagai Guru Kelas 5 di MI Nurul Azhar Harapan, Kota Bunga Raya. Membuat karya inovasi berupa Modul Pembelajaran Digital Kelas 5 Tema Ekosistem dan Pelestarian Lingkungan, aktif dalam kegiatan KKG MI, serta menyusun perangkat pembelajaran terpadu.',
 };
-
-export const SAMPLE_PROFILE: TeacherProfile = PDF_EXAMPLE_PROFILE;

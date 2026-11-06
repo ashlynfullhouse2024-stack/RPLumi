@@ -1,5 +1,14 @@
-import React, { useState } from 'react';
-import { ArrowRight, CheckCircle2, HelpCircle, Sparkles, X } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
+import {
+  ArrowRight,
+  CheckCircle2,
+  HelpCircle,
+  Info,
+  MousePointerClick,
+  Sparkles,
+  X,
+} from 'lucide-react';
 import { CamelliaBlossomSvg } from './FloralOrnaments';
 
 export interface HoverGuideProps {
@@ -12,6 +21,9 @@ export interface HoverGuideProps {
   className?: string;
 }
 
+/**
+ * Unclippable Portal Pop-up Guide whenever the user points (hovers) or focuses/taps on a menu/field/point.
+ */
 export function HoverGuide({
   title,
   description,
@@ -22,198 +34,347 @@ export function HoverGuide({
   className = 'inline-flex',
 }: HoverGuideProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [coords, setCoords] = useState<{
+    top: number;
+    left: number;
+    placement: 'top' | 'bottom';
+  }>({
+    top: 0,
+    left: 0,
+    placement: 'bottom',
+  });
+  const triggerRef = useRef<HTMLDivElement | null>(null);
 
-  const posClasses = {
-    bottom: 'top-full left-1/2 -translate-x-1/2 mt-2.5',
-    top: 'bottom-full left-1/2 -translate-x-1/2 mb-2.5',
-    left: 'right-full top-1/2 -translate-y-1/2 mr-2.5',
-    right: 'left-full top-1/2 -translate-y-1/2 ml-2.5',
-  }[position];
+  const updatePosition = () => {
+    if (!triggerRef.current) return;
+    const rect = triggerRef.current.getBoundingClientRect();
+    const tooltipWidth = 300;
+    const tooltipEstimatedHeight = tip ? 145 : 105;
+    const viewportW = window.innerWidth;
+    const viewportH = window.innerHeight;
+
+    // Decide whether to show above or below based on available viewport space
+    let placement: 'top' | 'bottom' = position === 'top' ? 'top' : 'bottom';
+    if (placement === 'bottom' && rect.bottom + tooltipEstimatedHeight + 16 > viewportH) {
+      placement = 'top';
+    } else if (placement === 'top' && rect.top - tooltipEstimatedHeight - 16 < 0) {
+      placement = 'bottom';
+    }
+
+    const top = placement === 'bottom' ? rect.bottom + 10 : Math.max(12, rect.top - 10);
+
+    // Clamp horizontal center so the popup never overflows left or right screen edges
+    const centerLeft = rect.left + rect.width / 2;
+    const minLeft = tooltipWidth / 2 + 12;
+    const maxLeft = Math.max(minLeft, viewportW - tooltipWidth / 2 - 12);
+    const clampedLeft = Math.min(Math.max(centerLeft, minLeft), maxLeft);
+
+    setCoords({
+      top,
+      left: clampedLeft,
+      placement,
+    });
+  };
+
+  const handleOpen = () => {
+    updatePosition();
+    setIsOpen(true);
+  };
+
+  const handleClose = () => {
+    setIsOpen(false);
+  };
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const onScrollOrResize = () => updatePosition();
+    window.addEventListener('scroll', onScrollOrResize, true);
+    window.addEventListener('resize', onScrollOrResize);
+    return () => {
+      window.removeEventListener('scroll', onScrollOrResize, true);
+      window.removeEventListener('resize', onScrollOrResize);
+    };
+  }, [isOpen]);
 
   return (
     <div
+      ref={triggerRef}
       className={`relative ${className}`}
-      onMouseEnter={() => setIsOpen(true)}
-      onMouseLeave={() => setIsOpen(false)}
-      onFocus={() => setIsOpen(true)}
-      onBlur={() => setIsOpen(false)}
+      onMouseEnter={handleOpen}
+      onMouseLeave={handleClose}
+      onFocusCapture={handleOpen}
+      onBlurCapture={handleClose}
     >
       {children}
 
-      {isOpen && (
-        <div
-          role="tooltip"
-          className={`pointer-events-none absolute z-50 w-72 sm:w-80 rounded-2xl border border-[#D8C0AD] bg-[#FFFDF9] p-3.5 text-left shadow-xl transition-opacity duration-150 ${posClasses}`}
-        >
-          <div className="flex items-start justify-between gap-2 mb-1.5">
-            <div className="flex items-center gap-1.5">
-              <CamelliaBlossomSvg className="w-4 h-4 shrink-0" />
-              <span className="font-display text-xs font-bold text-[#4A2E23]">{title}</span>
+      {isOpen &&
+        typeof document !== 'undefined' &&
+        createPortal(
+          <div
+            role="tooltip"
+            style={{
+              position: 'fixed',
+              top: `${coords.top}px`,
+              left: `${coords.left}px`,
+              transform:
+                coords.placement === 'bottom'
+                  ? 'translate(-50%, 0)'
+                  : 'translate(-50%, -100%)',
+              zIndex: 9999,
+            }}
+            className="pointer-events-none w-[290px] sm:w-[310px] rounded-2xl border border-[#C9AD96] bg-[#FFFDF9]/98 backdrop-blur-md p-3.5 text-left shadow-[0_16px_38px_rgba(59,40,32,0.22)] transition-opacity duration-150"
+          >
+            <div className="flex items-start justify-between gap-2 mb-1.5">
+              <div className="flex items-center gap-1.5">
+                <CamelliaBlossomSvg className="w-4 h-4 shrink-0" />
+                <span className="font-display text-xs font-bold text-[#3B2820] leading-snug">
+                  {title}
+                </span>
+              </div>
+              {badge ? (
+                <span className="font-mono text-[10px] font-bold px-2 py-0.5 rounded-md bg-[#F4DFE2] text-[#5A392C] shrink-0">
+                  {badge}
+                </span>
+              ) : (
+                <span className="font-mono text-[10px] font-semibold px-1.5 py-0.5 rounded bg-[#F5EAE0] text-[#6F4B3E] shrink-0">
+                  Petunjuk
+                </span>
+              )}
             </div>
-            {badge && (
-              <span className="font-mono text-[10px] font-semibold text-[#6F4B3E]">
-                {badge}
-              </span>
+
+            <p className="text-[11px] sm:text-xs leading-relaxed text-[#5A392C]">
+              {description}
+            </p>
+
+            {tip && (
+              <div className="mt-2 pt-1.5 border-t border-[#EFE4D8] text-[11px] text-[#6F4B3E] leading-snug">
+                <span className="font-bold text-[#4A2E23]">Tips Guru:</span> {tip}
+              </div>
             )}
-          </div>
-
-          <p className="text-[11px] leading-relaxed text-[#5E4539]">{description}</p>
-
-          {tip && (
-            <div className="mt-2 pt-2 border-t border-[#EFE4D8] text-[10px] text-[#7D6153] leading-snug">
-              <span className="font-semibold text-[#5A392C]">Tips Guru:</span> {tip}
-            </div>
-          )}
-        </div>
-      )}
+          </div>,
+          document.body
+        )}
     </div>
   );
 }
 
+/**
+ * Label with a subtle "?" Petunjuk pill so users immediately see they can hover/focus any point for instructions.
+ */
+export function FieldLabelWithGuide({
+  label,
+  required,
+  guideTitle,
+  guideDesc,
+  guideTip,
+}: {
+  label: string;
+  required?: boolean;
+  guideTitle: string;
+  guideDesc: string;
+  guideTip?: string;
+}) {
+  return (
+    <HoverGuide
+      title={guideTitle}
+      description={guideDesc}
+      tip={guideTip}
+      badge="Isian Data"
+      position="top"
+      className="flex items-center justify-between gap-1.5 mb-1 cursor-help"
+    >
+      <label className="text-xs font-semibold text-[#5A392C] flex items-center gap-1 cursor-help">
+        <span>{label}</span>
+        {required && <span className="text-[#C24B3B]">*</span>}
+      </label>
+      <span className="inline-flex items-center gap-0.5 text-[10px] font-medium text-[#876D60] hover:text-[#5A392C] bg-[#F5ECE2] px-1.5 py-0.5 rounded-md shrink-0">
+        <HelpCircle className="w-3 h-3 text-[#6F4B3E]" />
+        <span>Petunjuk</span>
+      </span>
+    </HoverGuide>
+  );
+}
+
+export type WorkspaceTabId = 'profil' | 'dokumen' | 'bukti_cek' | 'ekspor';
+
 export interface WorkflowStepItem {
   stepNumber: string;
-  id: string;
-  targetSectionId: string;
+  id: WorkspaceTabId;
   title: string;
   shortDesc: string;
   hoverTitle: string;
   hoverDetail: string;
   hoverTip: string;
   isCompleted: boolean;
-  actionLabel: string;
+  badgeText?: string;
 }
 
 interface OnboardingFlowProps {
   steps: WorkflowStepItem[];
-  onJumpToSection: (sectionId: string) => void;
+  activeTab: WorkspaceTabId;
+  onSelectTab: (tab: WorkspaceTabId) => void;
   onLoadSampleProfile: () => void;
   onGenerateAll13: () => void;
 }
 
 export function OnboardingWorkflowBar({
   steps,
-  onJumpToSection,
+  activeTab,
+  onSelectTab,
   onLoadSampleProfile,
   onGenerateAll13,
 }: OnboardingFlowProps) {
   const [activeGuideStepIndex, setActiveGuideStepIndex] = useState<number | null>(null);
-  const [isBannerExpanded, setIsBannerExpanded] = useState<boolean>(true);
+  const [hoveredStepId, setHoveredStepId] = useState<WorkspaceTabId | null>(null);
 
   const activeModalStep =
     activeGuideStepIndex !== null ? steps[activeGuideStepIndex] : null;
 
-  return (
-    <section className="mb-8 bg-[#FFFDF9] border border-[#E7D8C9] rounded-2xl p-5 sm:p-6">
-      <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-[#EFE4D8]">
-        <div className="flex items-center gap-2.5">
-          <CamelliaBlossomSvg className="w-5 h-5 shrink-0" />
-          <div>
-            <h2 className="font-display text-base sm:text-lg font-bold text-[#3B2820]">
-              Alur Penggunaan RPLumi untuk Guru (5 Langkah Mudah)
-            </h2>
-            <p className="text-xs text-[#876D60]">
-              Arahkan kursor ke setiap langkah atau menu untuk melihat penjelasan fungsi, atau klik
-              langkah untuk langsung menuju bagiannya.
-            </p>
-          </div>
-        </div>
+  // Show the hovered step's explanation or the currently selected tab's explanation
+  const explainedStep =
+    steps.find((s) => s.id === (hoveredStepId || activeTab)) || steps[0];
 
-        <div className="flex items-center gap-2 shrink-0">
+  return (
+    <section className="mb-5 relative z-10">
+      {/* Compact Stepper Bar — 2x2 grid on mobile, 4 columns on desktop */}
+      <div className="bg-[#FFFDF9]/92 backdrop-blur-xs border border-[#E7D8C9] rounded-2xl p-3 sm:p-4 shadow-xs">
+        <div className="flex flex-wrap items-center justify-between gap-2 pb-2.5 mb-3 border-b border-[#EFE4D8]">
+          <div className="flex items-center gap-2 min-w-0">
+            <CamelliaBlossomSvg className="w-4 h-4 shrink-0" />
+            <span className="text-xs font-bold text-[#4A3127]">
+              Alur Penggunaan Aplikasi (Arahkan kursor atau klik poin untuk melihat petunjuk):
+            </span>
+          </div>
+
           <HoverGuide
-            title="Tur Panduan Interaktif"
-            description="Membuka jendela panduan langkah demi langkah dari pengisian profil hingga pengunduhan berkas ZIP."
-            tip="Cocok bagi Bapak/Ibu guru yang baru pertama kali membuka RPLumi."
+            title="Tur Panduan Penggunaan Lengkap"
+            description="Membuka jendela panduan langkah demi langkah (Langkah 1 sampai 4) agar Bapak/Ibu Guru memahami alur pembuatan berkas RPL dengan mudah."
+            tip="Klik tombol ini kapan saja jika Anda baru pertama kali membuka aplikasi."
+            badge="Panduan Pemula"
             position="bottom"
           >
             <button
               type="button"
               onClick={() => setActiveGuideStepIndex(0)}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-[#4A2E23] bg-[#F4DFE2] hover:bg-[#EBCAD0] rounded-xl transition-colors whitespace-nowrap"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-[#4A2E23] bg-[#F4DFE2] hover:bg-[#EBCAD0] border border-[#E2C2C7] rounded-xl transition-colors whitespace-nowrap shrink-0"
             >
               <HelpCircle className="w-3.5 h-3.5 text-[#6F4B3E]" />
-              <span>Buka Tur Panduan</span>
+              <span>Cara Pakai Aplikasi (Panduan)</span>
             </button>
           </HoverGuide>
-
-          <button
-            type="button"
-            onClick={() => setIsBannerExpanded((prev) => !prev)}
-            className="px-3 py-2 text-xs font-semibold text-[#7E6458] hover:text-[#3B2820] border border-[#E7D8C9] rounded-xl transition-colors whitespace-nowrap"
-          >
-            {isBannerExpanded ? 'Sembunyikan Alur' : 'Tampilkan Alur'}
-          </button>
         </div>
-      </div>
 
-      {isBannerExpanded && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 pt-4">
-          {steps.map((step, index) => (
-            <HoverGuide
-              key={step.id}
-              title={step.hoverTitle}
-              description={step.hoverDetail}
-              tip={step.hoverTip}
-              badge={`Langkah ${step.stepNumber}`}
-              position="bottom"
-              className="block"
-            >
-              <button
-                type="button"
-                onClick={() => onJumpToSection(step.targetSectionId)}
-                className={`w-full h-full text-left p-3.5 rounded-xl border transition-colors flex flex-col justify-between group ${
-                  step.isCompleted
-                    ? 'bg-[#F6FAF5] border-[#C8DEC6] hover:border-[#8FB38D]'
-                    : 'bg-[#FCF9F5] border-[#E7D8C9] hover:border-[#8C6453] hover:bg-[#FAF2EA]'
-                }`}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
+          {steps.map((step, index) => {
+            const isActive = activeTab === step.id;
+            return (
+              <HoverGuide
+                key={step.id}
+                title={step.hoverTitle}
+                description={step.hoverDetail}
+                tip={step.hoverTip}
+                badge={`Langkah ${step.stepNumber}`}
+                position="bottom"
+                className="block"
               >
-                <div>
-                  <div className="flex items-center justify-between gap-2 mb-1.5">
-                    <span className="font-mono text-xs font-bold text-[#6F4B3E] tabular-nums">
-                      Langkah {step.stepNumber}
-                    </span>
-                    {step.isCompleted ? (
-                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#3F6A45]">
-                        <CheckCircle2 className="w-3.5 h-3.5" />
-                        Selesai
-                      </span>
-                    ) : (
-                      <span className="text-[11px] text-[#9C8275]">Ke bagian →</span>
-                    )}
-                  </div>
-
-                  <h3 className="text-xs sm:text-sm font-bold text-[#3B2820] group-hover:text-[#6F4B3E] mb-1">
-                    {step.title}
-                  </h3>
-                  <p className="text-[11px] text-[#7E6458] leading-relaxed">{step.shortDesc}</p>
-                </div>
-
-                <div className="mt-3 pt-2 border-t border-[#EFE4D8] flex items-center justify-between text-[11px] font-semibold text-[#6F4B3E]">
-                  <span>{step.actionLabel}</span>
-                  <span
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setActiveGuideStepIndex(index);
-                    }}
-                    className="text-[#876D60] hover:text-[#3B2820] underline"
+                <div
+                  onMouseEnter={() => setHoveredStepId(step.id)}
+                  onMouseLeave={() => setHoveredStepId(null)}
+                  className="relative h-full"
+                >
+                  <button
+                    type="button"
+                    onClick={() => onSelectTab(step.id)}
+                    className={`w-full h-full text-left p-2.5 sm:p-3 rounded-xl border transition-all flex flex-col justify-between min-h-[76px] ${
+                      isActive
+                        ? 'bg-[#6F4B3E] text-[#FFFDF9] border-[#6F4B3E] shadow-xs'
+                        : step.isCompleted
+                        ? 'bg-[#F6FAF5] text-[#3B2820] border-[#CBE0C9] hover:border-[#8FB38D]'
+                        : 'bg-[#FCF9F5] text-[#3B2820] border-[#E7D8C9] hover:bg-[#FAF2EA]'
+                    }`}
                   >
-                    Detail
-                  </span>
+                    <div className="flex items-center justify-between gap-1.5 mb-1">
+                      <span
+                        className={`font-mono text-[11px] font-bold tabular-nums ${
+                          isActive ? 'text-[#F5DFE2]' : 'text-[#7E6458]'
+                        }`}
+                      >
+                        POIN {step.stepNumber}
+                      </span>
+                      <div className="flex items-center gap-1">
+                        {step.isCompleted && (
+                          <CheckCircle2
+                            className={`w-3.5 h-3.5 shrink-0 ${
+                              isActive ? 'text-[#DCE8D8]' : 'text-[#3F6A45]'
+                            }`}
+                          />
+                        )}
+                        <span
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setActiveGuideStepIndex(index);
+                          }}
+                          title="Klik untuk penjelasan detail langkah ini"
+                          className={`inline-flex items-center justify-center w-4 h-4 rounded-full text-[10px] font-bold ${
+                            isActive
+                              ? 'bg-white/20 text-white hover:bg-white/30'
+                              : 'bg-[#EFE4D8] text-[#6F4B3E] hover:bg-[#E2D1C0]'
+                          }`}
+                        >
+                          ?
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="font-bold text-xs sm:text-sm leading-snug truncate">
+                      {step.title}
+                    </div>
+                    <div
+                      className={`text-[11px] truncate mt-0.5 ${
+                        isActive ? 'text-[#EFE0D4]' : 'text-[#876D60]'
+                      }`}
+                    >
+                      {step.badgeText || step.shortDesc}
+                    </div>
+                  </button>
                 </div>
-              </button>
-            </HoverGuide>
-          ))}
+              </HoverGuide>
+            );
+          })}
         </div>
-      )}
+
+        {/* Live Contextual Explanation Strip for the Pointed / Active Step */}
+        {explainedStep && (
+          <div className="mt-3 px-3.5 py-2.5 rounded-xl bg-[#FAF2EA] border border-[#E6D4C3] flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div className="flex items-start gap-2.5 min-w-0">
+              <Info className="w-4 h-4 text-[#6F4B3E] shrink-0 mt-0.5" />
+              <div className="text-xs leading-relaxed text-[#4A3127]">
+                <span className="font-bold text-[#3B2820] mr-1.5">
+                  Petunjuk {explainedStep.hoverTitle}:
+                </span>
+                <span>{explainedStep.hoverDetail}</span>
+                <span className="block sm:inline sm:ml-2 text-[#6F4B3E] font-medium">
+                  ({explainedStep.hoverTip})
+                </span>
+              </div>
+            </div>
+            <div className="flex items-center gap-1.5 text-[11px] text-[#7E6458] shrink-0">
+              <MousePointerClick className="w-3.5 h-3.5 text-[#6F4B3E]" />
+              <span>Arahkan kursor ke tombol/isian untuk info detail</span>
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Interactive Step-by-Step Guide Modal */}
       {activeModalStep && activeGuideStepIndex !== null && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#2B1C16]/50 backdrop-blur-xs p-4">
-          <div className="w-full max-w-lg rounded-3xl border border-[#DFCBB8] bg-[#FFFDF9] p-6 shadow-2xl">
-            <div className="flex items-center justify-between gap-3 pb-4 border-b border-[#EFE4D8]">
+          <div className="w-full max-w-md rounded-3xl border border-[#DFCBB8] bg-[#FFFDF9] p-5 sm:p-6 shadow-2xl">
+            <div className="flex items-center justify-between gap-3 pb-3 border-b border-[#EFE4D8]">
               <div className="flex items-center gap-2">
-                <CamelliaBlossomSvg className="w-5 h-5" />
+                <CamelliaBlossomSvg className="w-4 h-4" />
                 <span className="font-mono text-xs font-bold text-[#6F4B3E]">
-                  PANDUAN LANGKAH {activeModalStep.stepNumber} DARI {steps.length}
+                  PETUNJUK POIN {activeModalStep.stepNumber} DARI {steps.length}
                 </span>
               </div>
               <button
@@ -226,55 +387,49 @@ export function OnboardingWorkflowBar({
               </button>
             </div>
 
-            <div className="py-5 space-y-3">
-              <h3 className="font-display text-xl font-bold text-[#3B2820]">
+            <div className="py-4 space-y-3">
+              <h3 className="font-display text-lg font-bold text-[#3B2820]">
                 {activeModalStep.hoverTitle}
               </h3>
-              <p className="text-sm text-[#5E4539] leading-relaxed">
+              <p className="text-xs sm:text-sm text-[#5E4539] leading-relaxed">
                 {activeModalStep.hoverDetail}
               </p>
-              <div className="p-3.5 rounded-xl bg-[#FAF2EA] border border-[#E7D8C9] text-xs text-[#5A392C] leading-relaxed">
-                <strong className="block mb-0.5 text-[#3B2820]">
-                  Tips Praktis untuk Bapak/Ibu Guru:
-                </strong>
+              <div className="p-3 rounded-xl bg-[#FAF2EA] border border-[#E7D8C9] text-xs text-[#5A392C] leading-relaxed">
+                <strong className="block mb-0.5 text-[#3B2820]">Tips Guru:</strong>
                 {activeModalStep.hoverTip}
               </div>
 
               {activeGuideStepIndex === 0 && (
-                <div className="pt-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      onLoadSampleProfile();
-                      setActiveGuideStepIndex(1);
-                    }}
-                    className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-[#4A2E23] bg-[#F4DFE2] hover:bg-[#EBCAD0] rounded-xl transition-colors"
-                  >
-                    <Sparkles className="w-3.5 h-3.5 text-[#6F4B3E]" />
-                    <span>Coba Isi Contoh Profil Guru Sekarang & Lanjut →</span>
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onLoadSampleProfile();
+                    setActiveGuideStepIndex(1);
+                  }}
+                  className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-semibold text-[#4A2E23] bg-[#F4DFE2] hover:bg-[#EBCAD0] rounded-xl transition-colors"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-[#6F4B3E]" />
+                  <span>Gunakan Contoh Data Fiktif & Lanjut →</span>
+                </button>
               )}
 
               {activeGuideStepIndex === 1 && (
-                <div className="pt-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setActiveGuideStepIndex(null);
-                      onGenerateAll13();
-                    }}
-                    className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-[#FFFDF9] bg-[#6F4B3E] hover:bg-[#58392E] rounded-xl transition-colors"
-                  >
-                    <Sparkles className="w-3.5 h-3.5" />
-                    <span>Langsung Generate Semua 13 Dokumen Sekarang</span>
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveGuideStepIndex(null);
+                    onSelectTab('dokumen');
+                    onGenerateAll13();
+                  }}
+                  className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-semibold text-[#FFFDF9] bg-[#6F4B3E] hover:bg-[#58392E] rounded-xl transition-colors"
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>Generate Semua 13 Dokumen Sekarang</span>
+                </button>
               )}
             </div>
 
-            {/* Step Dots & Modal Footer Controls */}
-            <div className="pt-4 border-t border-[#EFE4D8] flex items-center justify-between gap-3">
+            <div className="pt-3 border-t border-[#EFE4D8] flex items-center justify-between gap-2">
               <div className="flex items-center gap-1.5">
                 {steps.map((s, idx) => (
                   <button
@@ -282,9 +437,7 @@ export function OnboardingWorkflowBar({
                     type="button"
                     onClick={() => setActiveGuideStepIndex(idx)}
                     className={`h-2 rounded-full transition-all ${
-                      idx === activeGuideStepIndex
-                        ? 'w-6 bg-[#6F4B3E]'
-                        : 'w-2 bg-[#DFCBB8] hover:bg-[#B89F8D]'
+                      idx === activeGuideStepIndex ? 'w-5 bg-[#6F4B3E]' : 'w-2 bg-[#DFCBB8]'
                     }`}
                     aria-label={`Langkah ${idx + 1}`}
                   />
@@ -292,43 +445,33 @@ export function OnboardingWorkflowBar({
               </div>
 
               <div className="flex items-center gap-2">
-                {activeGuideStepIndex > 0 && (
-                  <button
-                    type="button"
-                    onClick={() => setActiveGuideStepIndex(activeGuideStepIndex - 1)}
-                    className="px-3.5 py-2 text-xs font-semibold text-[#6E5346] hover:text-[#3B2820] border border-[#E7D8C9] rounded-xl"
-                  >
-                    Sebelumnya
-                  </button>
-                )}
-
                 <button
                   type="button"
                   onClick={() => {
-                    onJumpToSection(activeModalStep.targetSectionId);
+                    onSelectTab(activeModalStep.id);
                     setActiveGuideStepIndex(null);
                   }}
-                  className="px-3.5 py-2 text-xs font-semibold text-[#5A392C] bg-[#F5EAE0] hover:bg-[#EAD8C8] rounded-xl"
+                  className="px-3 py-2 text-xs font-semibold text-[#5A392C] bg-[#F5EAE0] hover:bg-[#EAD8C8] rounded-xl"
                 >
-                  Buka Bagian Ini
+                  Buka Menu Ini
                 </button>
 
                 {activeGuideStepIndex < steps.length - 1 ? (
                   <button
                     type="button"
                     onClick={() => setActiveGuideStepIndex(activeGuideStepIndex + 1)}
-                    className="inline-flex items-center gap-1 px-4 py-2 text-xs font-semibold text-[#FFFDF9] bg-[#6F4B3E] hover:bg-[#58392E] rounded-xl"
+                    className="inline-flex items-center gap-1 px-3.5 py-2 text-xs font-semibold text-[#FFFDF9] bg-[#6F4B3E] hover:bg-[#58392E] rounded-xl"
                   >
-                    <span>Selanjutnya</span>
+                    <span>Lanjut</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </button>
                 ) : (
                   <button
                     type="button"
                     onClick={() => setActiveGuideStepIndex(null)}
-                    className="px-4 py-2 text-xs font-semibold text-[#FFFDF9] bg-[#4F6D52] hover:bg-[#3F5942] rounded-xl"
+                    className="px-3.5 py-2 text-xs font-semibold text-[#FFFDF9] bg-[#4F6D52] hover:bg-[#3F5942] rounded-xl"
                   >
-                    Selesai & Mulai Kerja
+                    Selesai
                   </button>
                 )}
               </div>
