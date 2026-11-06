@@ -1,0 +1,6 @@
+{
+  "name": "RPLumi — Asisten Berkas RPL PPG Daljab",
+  "description": "Asisten penyusunan, pemeriksaan awal AI, pengelolaan bukti pendukung, dan ekspor dokumen Rekognisi Pembelajaran Lampau (RPL) untuk guru PPG Daljab RA, MI, MTs, dan MA.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
